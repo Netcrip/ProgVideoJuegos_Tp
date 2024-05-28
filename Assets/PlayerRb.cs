@@ -36,6 +36,13 @@ public class PlayerRb : MonoBehaviour
     private bool canDoubleJump;
 
     //move
+    private bool JustMove;
+    private Transform Direction;
+    private Vector3 movDir;
+    private float angle;
+
+    //Temporizador
+    private float timetoCheckGround;
 
     // Start is called before the first frame update
     void Start()
@@ -48,12 +55,12 @@ public class PlayerRb : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        direction = new Vector3(Input.GetAxis("Horizontal"), 0f, +Input.GetAxis("Vertical"));
+        
         Attack();
         chekGround();
         Jump();
         Defense();
-        
+        Movement();
 
 
     }
@@ -65,50 +72,66 @@ public class PlayerRb : MonoBehaviour
 
     }
 
-    private void PhysicsMovement()
+    private void Movement()
     {
+        direction = new Vector3(Input.GetAxis("Horizontal"), 0f, +Input.GetAxis("Vertical"));
         if (direction.magnitude >= 0.1f && canMove)
         {
             float targeAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y; 
-            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targeAngle, ref turnSmoothVelocity, turnSmoothTime);
+            angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targeAngle, ref turnSmoothVelocity, turnSmoothTime);
 
-            Vector3 movDir = Quaternion.Euler(0f, targeAngle, 0f) * Vector3.forward;
+            movDir = Quaternion.Euler(0f, targeAngle, 0f) * Vector3.forward;
 
-            _rigidbody.MovePosition(transform.position + movDir * speed * Time.fixedDeltaTime);
-
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
+            //_rigidbody.MovePosition(transform.position + movDir * speed * Time.fixedDeltaTime);
+  
+            //transform.rotation = Quaternion.Euler(0f, angle, 0f);
+            JustMove = true;
             AControler.SetFloat("isMoving", 1);
         }
         else
             AControler.SetFloat("isMoving", 0);
     }
 
+    private void PhysicsMovement()
+    {
+        if (JustMove)
+        {
+            _rigidbody.MovePosition(transform.position + movDir * speed * Time.fixedDeltaTime);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+            JustMove = false;
+            
+
+        }
+    }
     private void physicsJump()
     {
         if (justJumped)
-        {
-            
+        {           
             _rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            
             justJumped = false;
         }
 
-    }
+    } 
     private void chekGround()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-     
+        timetoCheckGround-=Time.deltaTime;
 
+        if (timetoCheckGround<=0)
+        {
+            isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        }
     }
 
-    private void Jump()
-    {
 
+    private void Jump()
+    {            
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            
+            timetoCheckGround = 0.2f;
             AControler.SetBool("isGround", false);
             AControler.SetBool("isJumping", true);
+            isGrounded= false;
             justJumped = true;
             canDoubleJump = true;
         }
@@ -133,6 +156,7 @@ public class PlayerRb : MonoBehaviour
     {
         if (Input.GetMouseButton(1) && isGrounded)
         {
+        
             AControler.SetBool("isDefence", true);
             canMove = false;
         }
