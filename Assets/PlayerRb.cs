@@ -44,6 +44,8 @@ public class PlayerRb : MonoBehaviour
     //Temporizador
     private float timetoCheckGround;
 
+    //weapon
+
     // Start is called before the first frame update
     void Start()
     {
@@ -182,6 +184,18 @@ public class PlayerRb : MonoBehaviour
         else
             canMove = true;
     }
+
+    private void OnTriggerStay(Collider other)
+    {
+        
+        if (other.gameObject.GetComponent<Enemy>())
+        {
+            // Lógica para aplicar daño al enemigo
+            Debug.Log("hay un enemygo enfrente ");
+        }
+    }
+
+
 }
 
 
