@@ -45,6 +45,8 @@ public class PlayerRb : MonoBehaviour
     private float timetoCheckGround;
 
     //weapon
+    [SerializeField] private float attackDistance;
+    [SerializeField]  LayerMask attackLayer;
 
     // Start is called before the first frame update
     void Start()
@@ -171,29 +173,36 @@ public class PlayerRb : MonoBehaviour
 
     private void Attack()
     {
-        if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(0))
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(0) && isGrounded)
         {
             AControler.SetTrigger("isAttackCircle");
             //canMove = false;
         }
-        else if (Input.GetMouseButtonDown(0))
+        else if (Input.GetMouseButtonDown(0) && isGrounded)
         {
             AControler.SetTrigger("isAttack");
+            //attackRaycast();
             //canMove = false;
         }
         else
             canMove = true;
     }
 
-    private void OnTriggerStay(Collider other)
-    {
-        
-        if (other.gameObject.GetComponent<Enemy>())
+        private void OnTriggerEnter(Collider other)
         {
+        
+           
             // Lógica para aplicar daño al enemigo
-            Debug.Log("hay un enemygo enfrente ");
+            Enemy enemy = other.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                enemy.damage(5);
+            }
         }
-    }
+       
+ 
+
+
 
 
 }
