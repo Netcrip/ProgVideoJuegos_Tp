@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static PlayerState;
 
 public class PlayerRb : MonoBehaviour
 {
@@ -53,8 +54,12 @@ public class PlayerRb : MonoBehaviour
 
     // ESTADOS PARA MOVIMIENTOS
     [SerializeField]private bool canMove;
-  
 
+    private playerState State;
+
+    private float attackTimeRemaning;
+    private float chargeAttack;
+   
 
     // Start is called before the first frame update
     void Start()
@@ -67,13 +72,66 @@ public class PlayerRb : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-        Attack();
-        chekGround();
-        Jump();
-        Defense();
-        Movement();
 
+        switch (State)
+        {
+            case playerState.Idle:
+                AControler.SetFloat("isMoving", 0);
+                break;
+            case playerState.Walking:
+                float targeAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+                angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targeAngle, ref turnSmoothVelocity, turnSmoothTime);
+                movDir = Quaternion.Euler(0f, targeAngle, 0f) * Vector3.forward;
+                JustMove = true;
+                AControler.SetFloat("isMoving", speed);
+                break;
+            case playerState.Jumping:
+                canMove = false;
+                AControler.SetFloat("isMoving", 0);
+                timetoCheckGround = 0.2f;
+                AControler.SetBool("isGround", false);
+                AControler.SetBool("isJumping", true);
+                isGrounded = false;
+                justJumped = true;
+                canDoubleJump = true;
+                break;
+            case playerState.FullJumping:
+                justJumped = true;
+                AControler.SetBool("isJumping", true);
+                AControler.SetBool("isGround", false);
+                AControler.SetBool("isJumpFull", true);
+                canDoubleJump = false;
+                break;
+            case playerState.Attacking:
+                canMove = false;
+    
+                AControler.SetTrigger("isAttack");
+                ActDesactivateCollaider();
+                damageAttack = 10;
+                break;
+            case playerState.Attacking2:
+                AControler.SetTrigger("isAttack2");
+                ActDesactivateCollaider();
+                damageAttack = 20;
+                break;
+            case playerState.TurningAttack:
+                canMove = false;
+                AControler.SetTrigger("isTurningAttack");
+                ActDesactivateCollaider();
+                damageAttack = 5;
+                break;
+            case playerState.Dead:
+                break;
+            case playerState.Victory: 
+                break;
+
+
+        }
+
+        chekGround();
+ 
+        Movement();
+        
 
     }
 
@@ -87,23 +145,77 @@ public class PlayerRb : MonoBehaviour
     private void Movement()
     {
         direction = new Vector3(Input.GetAxis("Horizontal"), 0f, +Input.GetAxis("Vertical"));
-        if (direction.magnitude >= 0.1f && canMove)
+        //
+       
+         if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            float targeAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y; 
-            angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targeAngle, ref turnSmoothVelocity, turnSmoothTime);
+            State = playerState.Jumping;
+        }
+        else if (Input.GetButtonDown("Jump") && canDoubleJump)
+        {
+            State = playerState.FullJumping;
+        }
+        else if(Input.GetMouseButton(1) && isGrounded)
+        {
 
-            movDir = Quaternion.Euler(0f, targeAngle, 0f) * Vector3.forward;
+            AControler.SetBool("isDefence", true);
+            canMove = false;
+        }
+        else if (Input.GetMouseButtonUp(1) && isGrounded)
+        {
+            AControler.SetBool("isDefence", false);
 
-            //_rigidbody.MovePosition(transform.position + movDir * speed * Time.fixedDeltaTime);
-  
-            //transform.rotation = Quaternion.Euler(0f, angle, 0f);
-            JustMove = true;
-            AControler.SetFloat("isMoving", 1);
-            
+        }
+        else if (Input.GetKey(KeyCode.F) && isGrounded)
+        {
+            Debug.Log("entro");
+            //canMove = false;
+            State = playerState.TurningAttack;
+        }
+        else if (Input.GetMouseButtonDown(0) && isGrounded)
+        {
+            canMove = false;
+            chargeAttack = Time.time;
+        }
+         else if (Input.GetMouseButtonUp(0) && isGrounded && attackTimeRemaning<=0f)
+        {
+            if (Time.time -chargeAttack <= 0.2)
+            {
+    
+               State = playerState.Attacking;
+               attackTimeRemaning = 0.5f;
+
+
+            }
+            else
+            {
+                State = playerState.Attacking2;
+                attackTimeRemaning = 1f;
+            }
+        }
+        else if (direction.magnitude >= 0.1f && canMove)
+        {
+            State = playerState.Walking;
         }
         else
-            AControler.SetFloat("isMoving", 0);
+        {
+            State = playerState.Idle;
+        }
+
+        // salto
         
+
+        // piso
+       if (isGrounded)
+        {
+            AControler.SetBool("isGround", true);
+            AControler.SetBool("isJumping", false);
+            AControler.SetBool("isJumpFull", false);
+            
+
+            timmers();
+        }
+
     }
 
     private void PhysicsMovement()
@@ -120,9 +232,8 @@ public class PlayerRb : MonoBehaviour
     private void physicsJump()
     {
         if (justJumped)
-        {           
-            _rigidbody.AddForce(Vector3.up * jumpForce + movDir* (jumpForce/2.5f), ForceMode.Impulse);
-            
+        {
+            _rigidbody.AddForce(Vector3.up  * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce)+movDir *1.1f, ForceMode.Impulse);
             justJumped = false;
         }
 
@@ -131,6 +242,9 @@ public class PlayerRb : MonoBehaviour
     {
         timetoCheckGround-=Time.deltaTime;
 
+        AControler.SetBool("canMove", canMove);
+ 
+
         if (timetoCheckGround<=0)
         {
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
@@ -138,70 +252,28 @@ public class PlayerRb : MonoBehaviour
     }
 
 
-    private void Jump()
-    {            
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
-            canMove = false;
-            timetoCheckGround = 0.2f;
-            AControler.SetBool("isGround", false);
-            AControler.SetBool("isJumping", true);
-            isGrounded= false;
-            justJumped = true;
-            canDoubleJump = true;
-        }
-        else if (Input.GetButtonDown("Jump") && canDoubleJump)
-        {
-            justJumped = true;
-            AControler.SetBool("isJumping", false);
-            AControler.SetBool("isGround", false);
-            AControler.SetBool("isDoubleJumping", true);
-            canDoubleJump = false;
-        }
-        else if (isGrounded)
-        {
-            AControler.SetBool("isGround", true);
-            AControler.SetBool("isJumping", false);
-            AControler.SetBool("isDoubleJumping", false);
-            canMove = true;
-        }
-
-    }
-
-    private void Defense()
-    {
-        if (Input.GetMouseButton(1) && isGrounded)
-        {
-        
-            AControler.SetBool("isDefence", true);
-            canMove = false;
-        }
-        else if (Input.GetMouseButtonUp(1) && isGrounded)
-        {
-            AControler.SetBool("isDefence", false);
-            canMove = true;
-        }
-    }
+ 
 
     private void Attack()
     {
-        if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(0) && isGrounded )
-        {
-            AControler.SetTrigger("isAttackCircle");
-            //canMove = false;
-            ActDesactivateCollaider();
-            damageAttack = 5;
-        }
-        else if (Input.GetMouseButtonDown(0) && isGrounded )
-        {
-            AControler.SetTrigger("isAttack");
-            ActDesactivateCollaider();
-            damageAttack = 10;
-            //attackRaycast();
-            //canMove = false;s
-        }
+        
+
+        
        
           
+    }
+
+
+
+    private void timmers()
+    {
+        if (attackTimeRemaning <= 0)
+        {
+            
+            canMove = true;
+           
+        }
+        attackTimeRemaning -= Time.deltaTime;
     }
 
     private void ActDesactivateCollaider()
