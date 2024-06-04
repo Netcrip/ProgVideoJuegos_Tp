@@ -7,13 +7,14 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField]  private NavMeshAgent agent;
     [SerializeField] private Transform player;
-    [SerializeField] private float hp;
+    [SerializeField] private float hp=80;
     // Start is called before the first frame update
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         player = GameObject.FindGameObjectWithTag("Player").transform;
+
     }
     void Start()
     {
@@ -22,6 +23,9 @@ public class Enemy : MonoBehaviour
 
     }
 
+
+
+
     // Update is called once per frame
     void Update()
     {
@@ -29,9 +33,18 @@ public class Enemy : MonoBehaviour
         {
             agent.SetDestination(player.position);
         }
+        dead();
     }
     public void damage(float damage)
     {
         hp -= damage;
+    }
+
+        private void dead()
+    {
+        if (hp <= 0)
+        {
+            Destroy(this.gameObject, 5);
+        }
     }
 }

@@ -20,7 +20,7 @@ public class PlayerRb : MonoBehaviour
     [SerializeField] private float turnSmoothTime = 0.1f;
     [SerializeField] private Transform cam;
     private Vector3 direction;
-    [SerializeField] private bool canMove;
+   // [SerializeField] private bool canMove;
 
 
 
@@ -47,6 +47,14 @@ public class PlayerRb : MonoBehaviour
     //weapon
     [SerializeField] private float attackDistance;
     [SerializeField]  LayerMask attackLayer;
+    private int countAttack;
+    private float damageAttack;
+    [SerializeField] Collider weponCollider;
+
+    // ESTADOS PARA MOVIMIENTOS
+    [SerializeField]private bool canMove;
+  
+
 
     // Start is called before the first frame update
     void Start()
@@ -91,9 +99,11 @@ public class PlayerRb : MonoBehaviour
             //transform.rotation = Quaternion.Euler(0f, angle, 0f);
             JustMove = true;
             AControler.SetFloat("isMoving", 1);
+            
         }
         else
             AControler.SetFloat("isMoving", 0);
+        
     }
 
     private void PhysicsMovement()
@@ -103,7 +113,7 @@ public class PlayerRb : MonoBehaviour
             _rigidbody.MovePosition(transform.position + movDir * speed * Time.fixedDeltaTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
             JustMove = false;
-            
+           
 
         }
     }
@@ -111,7 +121,7 @@ public class PlayerRb : MonoBehaviour
     {
         if (justJumped)
         {           
-            _rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            _rigidbody.AddForce(Vector3.up * jumpForce + movDir* (jumpForce/2.5f), ForceMode.Impulse);
             
             justJumped = false;
         }
@@ -132,6 +142,7 @@ public class PlayerRb : MonoBehaviour
     {            
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
+            canMove = false;
             timetoCheckGround = 0.2f;
             AControler.SetBool("isGround", false);
             AControler.SetBool("isJumping", true);
@@ -152,6 +163,7 @@ public class PlayerRb : MonoBehaviour
             AControler.SetBool("isGround", true);
             AControler.SetBool("isJumping", false);
             AControler.SetBool("isDoubleJumping", false);
+            canMove = true;
         }
 
     }
@@ -173,30 +185,39 @@ public class PlayerRb : MonoBehaviour
 
     private void Attack()
     {
-        if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(0) && isGrounded)
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(0) && isGrounded )
         {
             AControler.SetTrigger("isAttackCircle");
             //canMove = false;
+            ActDesactivateCollaider();
+            damageAttack = 5;
         }
-        else if (Input.GetMouseButtonDown(0) && isGrounded)
+        else if (Input.GetMouseButtonDown(0) && isGrounded )
         {
             AControler.SetTrigger("isAttack");
+            ActDesactivateCollaider();
+            damageAttack = 10;
             //attackRaycast();
-            //canMove = false;
+            //canMove = false;s
         }
-        else
-            canMove = true;
+       
+          
     }
 
-        private void OnTriggerEnter(Collider other)
-        {
-        
-           
+    private void ActDesactivateCollaider()
+    {
+        weponCollider.enabled = false;
+        weponCollider.enabled = true;
+
+    }
+
+    private void OnTriggerEnter(Collider other)
+        {          
             // Lógica para aplicar daño al enemigo
             Enemy enemy = other.GetComponent<Enemy>();
             if (enemy != null)
             {
-                enemy.damage(5);
+                enemy.damage(damageAttack);
             }
         }
        
