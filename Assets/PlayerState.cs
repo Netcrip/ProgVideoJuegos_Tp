@@ -14,6 +14,7 @@ public class PlayerState : MonoBehaviour
         Attacking3,
         TurningAttack,
         Dead,
-        Victory
+        Victory,
+        Defence
     }
 }

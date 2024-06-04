@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using static PlayerState;
 
@@ -35,6 +36,7 @@ public class PlayerRb : MonoBehaviour
     [SerializeField] private float jumpForce;
     private bool justJumped;
     private bool canDoubleJump;
+    private bool doubleJump;
 
     //move
     private bool JustMove;
@@ -59,7 +61,8 @@ public class PlayerRb : MonoBehaviour
 
     private float attackTimeRemaning;
     private float chargeAttack;
-   
+    private float TimerCanMove;
+
 
     // Start is called before the first frame update
     void Start()
@@ -87,6 +90,7 @@ public class PlayerRb : MonoBehaviour
                 break;
             case playerState.Jumping:
                 canMove = false;
+                TimerCanMove = 1f;
                 AControler.SetFloat("isMoving", 0);
                 timetoCheckGround = 0.2f;
                 AControler.SetBool("isGround", false);
@@ -97,6 +101,7 @@ public class PlayerRb : MonoBehaviour
                 break;
             case playerState.FullJumping:
                 justJumped = true;
+                doubleJump = true;
                 AControler.SetBool("isJumping", true);
                 AControler.SetBool("isGround", false);
                 AControler.SetBool("isJumpFull", true);
@@ -104,21 +109,28 @@ public class PlayerRb : MonoBehaviour
                 break;
             case playerState.Attacking:
                 canMove = false;
-    
+                TimerCanMove = 0.5f;
                 AControler.SetTrigger("isAttack");
                 ActDesactivateCollaider();
                 damageAttack = 10;
                 break;
             case playerState.Attacking2:
+                canMove = false;
+                TimerCanMove =2f;
                 AControler.SetTrigger("isAttack2");
                 ActDesactivateCollaider();
                 damageAttack = 20;
                 break;
             case playerState.TurningAttack:
                 canMove = false;
+                TimerCanMove = 0.5f;
                 AControler.SetTrigger("isTurningAttack");
                 ActDesactivateCollaider();
                 damageAttack = 5;
+                break;
+            case playerState.Defence:
+                canMove = !canMove;
+                AControler.SetBool("isDefence", !canMove);
                 break;
             case playerState.Dead:
                 break;
@@ -129,8 +141,8 @@ public class PlayerRb : MonoBehaviour
         }
 
         chekGround();
- 
         Movement();
+        CanMove();
         
 
     }
@@ -140,6 +152,16 @@ public class PlayerRb : MonoBehaviour
         PhysicsMovement();
         physicsJump();
 
+    }
+
+    private void CanMove()
+    {
+        if (TimerCanMove <= 0)
+        {
+            canMove = true;
+            
+        }
+        AControler.SetBool("canMove", canMove);
     }
 
     private void Movement()
@@ -155,16 +177,13 @@ public class PlayerRb : MonoBehaviour
         {
             State = playerState.FullJumping;
         }
-        else if(Input.GetMouseButton(1) && isGrounded)
+        else if(Input.GetMouseButtonDown(1) && isGrounded)
         {
-
-            AControler.SetBool("isDefence", true);
-            canMove = false;
+            State = playerState.Defence;
         }
         else if (Input.GetMouseButtonUp(1) && isGrounded)
         {
-            AControler.SetBool("isDefence", false);
-
+            State = playerState.Defence;
         }
         else if (Input.GetKey(KeyCode.F) && isGrounded)
         {
@@ -212,7 +231,6 @@ public class PlayerRb : MonoBehaviour
             AControler.SetBool("isJumping", false);
             AControler.SetBool("isJumpFull", false);
             
-
             timmers();
         }
 
@@ -231,9 +249,18 @@ public class PlayerRb : MonoBehaviour
     }
     private void physicsJump()
     {
-        if (justJumped)
+        if (justJumped && doubleJump)
         {
-            _rigidbody.AddForce(Vector3.up  * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce)+movDir *1.1f, ForceMode.Impulse);
+
+            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir * 1.5f, ForceMode.Impulse);
+            justJumped = false;
+            doubleJump = false;
+        }
+        else if (justJumped)
+        {
+            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir * 1.3f, ForceMode.Impulse);
+            Debug.Log(" fuerza: " + Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce).ToString() + " pphy: " + Physics.gravity.y);
+
             justJumped = false;
         }
 
@@ -241,10 +268,6 @@ public class PlayerRb : MonoBehaviour
     private void chekGround()
     {
         timetoCheckGround-=Time.deltaTime;
-
-        AControler.SetBool("canMove", canMove);
- 
-
         if (timetoCheckGround<=0)
         {
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
