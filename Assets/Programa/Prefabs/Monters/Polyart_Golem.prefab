@@ -331,7 +331,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1077356410}
   - component: {fileID: 1077356409}
-  - component: {fileID: 2390322983545347634}
+  - component: {fileID: 2054389878}
+  - component: {fileID: 2054389879}
+  - component: {fileID: 2054389880}
   m_Layer: 0
   m_Name: Polyart_Golem
   m_TagString: Untagged
@@ -365,7 +367,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1077356408}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 9000000, guid: 0f2c5202b918687408ac5bc7429a03ea, type: 3}
   m_Controller: {fileID: 9100000, guid: 64e2ef14a02f69a4b94edbee54ca296a, type: 2}
   m_CullingMode: 1
@@ -378,7 +380,42 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &2390322983545347634
+--- !u!65 &2054389878
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1077356408}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.989296, y: 4.498251, z: 2.3337965}
+  m_Center: {x: 0.037906647, y: 1.7491255, z: -0.0067076683}
+--- !u!195 &2054389879
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1077356408}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 1.3
+  m_Speed: 2
+  m_Acceleration: 6
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 4.5
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &2054389880
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -387,14 +424,35 @@ MonoBehaviour:
   m_GameObject: {fileID: 1077356408}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df506ce51a9b0944bbab5027345655b3, type: 3}
+  m_Script: {fileID: 11500000, guid: bd2ded04ead88604e93b04a7265ec935, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agent: {fileID: 0}
+  agent: {fileID: 2054389879}
   player: {fileID: 0}
-  currentHealth: 800
-  maxHealth: 800
-  health: {fileID: 511302228251411929}
+  whatIsGround:
+    serializedVersion: 2
+    m_Bits: 512
+  whatIsPlayer:
+    serializedVersion: 2
+    m_Bits: 8
+  health: 800
+  AControler: {fileID: 0}
+  walkPoint: {x: 0, y: 0, z: 0}
+  walkPointRange: 0
+  respawPoint: {x: 0, y: 0, z: 0}
+  timeBetweenAttacks: 2
+  timeBetweenlongAttacks: 0
+  rock: {fileID: 5298590762127773683, guid: cad9f745870d9f448bf225d2a253d382, type: 3}
+  rockPosition: {fileID: 1410795413}
+  damageAttack: 0
+  sightRange: 18
+  attackRange: 15
+  attackLongRange: 0
+  rotationSpeed: 0
+  playerInSightRange: 0
+  playerInAttackRange: 0
+  playerInAttackLongRange: 0
+  inRespawnPosition: 0
 --- !u!1 &1099011281
 GameObject:
   m_ObjectHideFlags: 0
@@ -517,8 +575,40 @@ Transform:
   m_LocalPosition: {x: -41.419212, y: 4.3299223e-14, z: -7.770477e-16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1410795413}
   m_Father: {fileID: 739286404}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1410795412
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1410795413}
+  m_Layer: 0
+  m_Name: RockPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1410795413
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410795412}
+  m_LocalRotation: {x: -0.71014374, y: 0.62117416, z: -0.32227877, w: -0.07729799}
+  m_LocalPosition: {x: -103.81485, y: -36.27185, z: -290.10068}
+  m_LocalScale: {x: 99.99997, y: 100, z: 99.99998}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1358025756}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1423454222
@@ -531,7 +621,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1423454223}
   - component: {fileID: 1423454224}
-  - component: {fileID: 408962047002775727}
   m_Layer: 0
   m_Name: RockGolemMesh
   m_TagString: Untagged
@@ -627,23 +716,6 @@ SkinnedMeshRenderer:
     m_Center: {x: -81.94922, y: 7.468132, z: 17.97406}
     m_Extent: {x: 256.02264, y: 222.98007, z: 335.63257}
   m_DirtyAABB: 0
---- !u!114 &408962047002775727
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1423454222}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df506ce51a9b0944bbab5027345655b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  agent: {fileID: 0}
-  player: {fileID: 0}
-  currentHealth: 80
-  maxHealth: 80
-  health: {fileID: 0}
 --- !u!1 &1459968636
 GameObject:
   m_ObjectHideFlags: 0
@@ -937,17 +1009,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 736108d6c2b55954cbc8e2039e3a2caf, type: 3}
---- !u!114 &511302228251411929 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1845872865116845130, guid: 736108d6c2b55954cbc8e2039e3a2caf, type: 3}
-  m_PrefabInstance: {fileID: 2199262114489102739}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0aa682a8dd45ed1458c4c3b8202f30ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &2201583686338052798 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2464620029768493, guid: 736108d6c2b55954cbc8e2039e3a2caf, type: 3}

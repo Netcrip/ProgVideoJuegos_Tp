@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -12,40 +13,76 @@ public class Boss : MonoBehaviour
 
     [SerializeField] private LayerMask whatIsGround, whatIsPlayer;
 
-    [SerializeField] private float health;
+    //health
+    [SerializeField] private float currentHealth;
+    private float maxHealth;
+    [SerializeField] private HealthManager health;
+    [SerializeField]private bool isAlive;
+
+    // Animator
+    [SerializeField] private Animator AControler;
 
     //Patroling
     [SerializeField] private Vector3 walkPoint;
     bool walkPointSet;
     public float walkPointRange;
 
+    //Respawn point
+    [SerializeField] private Vector3 respawPoint;
+
     //Attacking
-    [SerializeField] private float timeBetweenAttacks;
+    [SerializeField] private float timeBetweenAttacks, timeBetweenlongAttacks;
     bool alreadyAttacked;
     [SerializeField] private GameObject rock;
     [SerializeField] private Transform rockPosition;
+    private RaycastHit hit;
+    [SerializeField] private float damageAttack;
+    [SerializeField] private GameObject rockShow;
+    private bool trhowRock = false;
 
     //States
-    [SerializeField] private float sightRange, attackRange;
-    [SerializeField] private bool playerInSightRange, playerInAttackRange;
+    [SerializeField] private float sightRange, attackRange,attackLongRange, rotationSpeed;
+    [SerializeField] private bool playerInSightRange, playerInAttackRange,playerInAttackLongRange,inRespawnPosition;
 
     private void Awake()
     {
         player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
+        respawPoint = transform.position;
+        maxHealth = currentHealth;
     }
 
     private void Update()
     {
-        //Check for sight and attack range
+        //Comprobasion rango para seguir y atacar 
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
-        playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
+        playerInAttackLongRange = Physics.CheckSphere(transform.position, attackLongRange-1f, whatIsPlayer);
+        playerInAttackRange = Physics.CheckSphere(transform.position, attackRange-1f, whatIsPlayer);
+        if(transform.position.x == respawPoint.x && transform.position.z==respawPoint.z) inRespawnPosition= true;
+        if( currentHealth > 0.0f) isAlive=true; else isAlive=false;
+        //if (!playerInSightRange && !playerInAttackRange) Patroling();
+        if (!playerInSightRange && !playerInAttackRange && !playerInAttackLongRange && inRespawnPosition && isAlive) iddle();
+        else if (!playerInSightRange && !playerInAttackRange && !playerInAttackLongRange && isAlive) goToRespawn();
+        if (playerInAttackLongRange && !playerInSightRange && isAlive) LongAttackPlayer();
+        if (playerInSightRange && !playerInAttackRange && isAlive) ChasePlayer();
+        if (playerInAttackRange && playerInSightRange && isAlive) AttackPlayer();
 
-        if (!playerInSightRange && !playerInAttackRange) Patroling();
-        if (playerInSightRange && !playerInAttackRange) ChasePlayer();
-        if (playerInAttackRange && playerInSightRange) AttackPlayer();
+
     }
-
+    private void FixedUpdate()
+    {
+        if (trhowRock)
+        {
+            RockThrower();
+            trhowRock=false;
+        }
+    }
+    private void iddle() => AControler.SetFloat("isMoving", 0f);
+    private void goToRespawn()
+    {
+        agent.SetDestination(respawPoint);
+        AControler.SetFloat("isMoving", 0.5f);
+    }
     private void Patroling()
     {
         if (!walkPointSet) SearchWalkPoint();
@@ -61,7 +98,7 @@ public class Boss : MonoBehaviour
     }
     private void SearchWalkPoint()
     {
-        //Calculate random point in range
+        //calcular un punto en x e y dentro de la zona del mapa
         float randomZ = Random.Range(-walkPointRange, walkPointRange);
         float randomX = Random.Range(-walkPointRange, walkPointRange);
 
@@ -74,52 +111,120 @@ public class Boss : MonoBehaviour
     private void ChasePlayer()
     {
         agent.SetDestination(player.position);
+        AControler.SetFloat("isMoving",0.5f);
+    }
+
+    private void LongAttackPlayer()
+    {
+        //Make sure enemy doesn't move
+        agent.SetDestination(transform.position);
+        AControler.SetFloat("isMoving", 0f);
+        transform.LookAt(player);
+
+        if (!alreadyAttacked)
+        {
+            
+            Ray ray = new Ray(transform.position, transform.forward);
+            if(Physics.Raycast(ray,out hit, attackLongRange))
+            {
+             
+             AControler.SetTrigger("longAttack");
+
+                Invoke(nameof(ShowRock), 0.6f);
+                ///Calculamos la disntacia para la fuerza de la piedra
+                Invoke(nameof(RockThrowerCall),1.6f);               
+                
+             alreadyAttacked = true;
+             Invoke(nameof(ResetAttack), timeBetweenlongAttacks);
+            }
+            
+        }
+    }
+
+    //stone 
+    private void ShowRock()
+    {
+        rockShow.SetActive(true);
+    }
+    private void RockThrowerCall()
+    {
+        trhowRock = true;
+    }
+
+    private void RockThrower()
+    {
+        rockShow.SetActive(false);
+        Rigidbody rb = Instantiate(rock, rockPosition.position, Quaternion.identity).GetComponent<Rigidbody>();
+        rb.AddForce(transform.forward * (hit.distance / 1.7f), ForceMode.Impulse);
+        rb.AddForce(transform.up * 8f, ForceMode.Impulse);
+        rb.AddTorque(Random.Range(0,500), Random.Range(0, 500), Random.Range(0, 500));
     }
 
     private void AttackPlayer()
     {
         //Make sure enemy doesn't move
         agent.SetDestination(transform.position);
-
-        transform.LookAt(player);
-
+        AControler.SetFloat("isMoving", 0f);
+     
         if (!alreadyAttacked)
         {
+            //mirar al jugador
+            Quaternion newRotation = Quaternion.LookRotation( player.transform.position- transform.position);
+            Quaternion currentRotation = transform.rotation;
+            Quaternion finalRotation = Quaternion.Lerp(currentRotation, newRotation, Time.deltaTime * rotationSpeed);
+            transform.rotation = finalRotation;
+
+
+
+
             RaycastHit hit;
             Ray ray = new Ray(transform.position, transform.forward);
-            if(Physics.Raycast(ray,out hit, attackRange))
-            {            
-            ///Attack code here
-            Rigidbody rb = Instantiate(rock, rockPosition.position, Quaternion.identity).GetComponent<Rigidbody>();
-            rb.AddForce(transform.forward * (hit.distance/1.9f), ForceMode.Impulse);
-            rb.AddForce(transform.up * 8f, ForceMode.Impulse);
-                ///End of attack code
+            if (Physics.Raycast(ray, out hit, attackRange))
+            {
+                AControler.SetTrigger("shortAttack");
+
+                alreadyAttacked = true;
+                Invoke(nameof(ResetAttack), timeBetweenAttacks);
             }
-            alreadyAttacked = true;
-            Invoke(nameof(ResetAttack), timeBetweenAttacks);
+
+           
         }
     }
     private void ResetAttack()
     {
         alreadyAttacked = false;
     }
-
-    public void TakeDamage(int damage)
-    {
-        health -= damage;
-
-        if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
-    }
     private void DestroyEnemy()
     {
         Destroy(gameObject);
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        // Lógica para aplicar daño al enemigo
+        PlayerRb isplayer = other.GetComponent<PlayerRb>();
+        if (isplayer != null)
+        {
+            isplayer.Damage(damageAttack);
+        }
+    }
+    public void damage(float damage)
+    {
+        currentHealth -= damage;
+        health.UpdateHealtBar(maxHealth, currentHealth);
+        if (currentHealth <= 0)
+        {
+            AControler.SetBool("isDead", true);
+            Invoke(nameof(DestroyEnemy), 6f);
+        }
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, attackLongRange);
         Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, sightRange);
     }
 }

@@ -11,12 +11,12 @@ GameObject:
   - component: {fileID: 3145213401843664776}
   - component: {fileID: 5599028697635640829}
   - component: {fileID: 1882749022946428489}
-  - component: {fileID: 344868341849220392}
   - component: {fileID: 6760239440454913125}
   - component: {fileID: 6895071631447179366}
-  m_Layer: 0
+  - component: {fileID: 2481502819370860774}
+  m_Layer: 10
   m_Name: Polyart_Rock
-  m_TagString: Untagged
+  m_TagString: Proyectile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -86,19 +86,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &344868341849220392
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5298590762127773683}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 2.3865008, y: 1.9903375, z: 1.808518}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6760239440454913125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111,8 +98,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39b7945f6bfb6dd44b346b9f27eb59b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeToDestroy: 2
+  timeToDestroy: 4.04
   speed: 0
+  explosionRadius: 5
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 520
+  damageAttack: 30
 --- !u!54 &6895071631447179366
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -129,3 +121,16 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!135 &2481502819370860774
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5298590762127773683}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.49
+  m_Center: {x: 0, y: 0, z: 0}

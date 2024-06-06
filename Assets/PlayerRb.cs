@@ -50,7 +50,7 @@ public class PlayerRb : MonoBehaviour
     private float timetoCheckGround;
 
     //weapon
-    [SerializeField] private float attackDistance;
+    [SerializeField] private float attackDamage;
     [SerializeField]  LayerMask attackLayer;
     private int countAttack;
     private float damageAttack;
@@ -132,14 +132,14 @@ public class PlayerRb : MonoBehaviour
                 TimerCanMove = 0.5f;
                 AControler.SetTrigger("isAttack");
                 ActDesactivateCollaider();
-                damageAttack = 10;
+                damageAttack = attackDamage*1f;
                 break;
             case playerState.Attacking2:
                 canMove = false;
                 TimerCanMove =1f;
                 AControler.SetTrigger("isAttack2");
                 ActDesactivateCollaider();
-                damageAttack = 15;
+                damageAttack = attackDamage*1.5f;
                 break;
             case playerState.SpinAttack:                
                 ActDesactivateCollaider();
@@ -155,6 +155,8 @@ public class PlayerRb : MonoBehaviour
                 AControler.SetBool("isDefence", !canMove);
                 break;
             case playerState.Dead:
+                canMove = false;
+                AControler.SetBool("isDead", true);
                 break;
             case playerState.Victory: 
                 break;
@@ -193,8 +195,11 @@ public class PlayerRb : MonoBehaviour
     {
         direction = new Vector3(Input.GetAxis("Horizontal"), 0f, +Input.GetAxis("Vertical"));
         //
-
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (health <= 0)
+        {
+            State=playerState.Dead;
+        }
+        else if (Input.GetButtonDown("Jump") && isGrounded)
         {
             State = playerState.Jumping;
         }
@@ -212,7 +217,6 @@ public class PlayerRb : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.F) && isGrounded)
         {
-            Debug.Log("entro");
             State = playerState.SpinAttack;
             timeDamage = 0.8f;
         }
@@ -348,6 +352,37 @@ public class PlayerRb : MonoBehaviour
             {
                 enemy.damage(damageAttack);
             }
+            Boss boss = other.GetComponent<Boss>();
+            if (boss != null && timeDamage > 0)
+            {
+            Debug.Log("AtakeBoss");
+            boss.damage(damageAttack);
+            }
+
+    }
+    public void Damage(float damage)
+    {
+        if (State == playerState.DefenceOn)
+        {
+            if ((shield>=damage))
+            {
+                shield -= damage;
+                AControler.SetTrigger("isDefenceHit");
+            }
+            else
+            {
+                damage -= shield;
+                shield=0f;
+                health -= damage;
+                AControler.SetTrigger("isHit");
+            }
+            
+        }
+        else
+        {
+            health -= damage;
+            AControler.SetTrigger("isHit");
+        }
     }
      
 }
