@@ -5,6 +5,7 @@ public class PlayerState : MonoBehaviour
  public enum playerState
     {  
         Idle,
+        Waiting,
         Walking,
         Running,
         Jumping,
@@ -12,9 +13,11 @@ public class PlayerState : MonoBehaviour
         Attacking,
         Attacking2,
         Attacking3,
-        TurningAttack,
+        SpinAttack,
         Dead,
         Victory,
-        Defence
+        DefenceOn,
+        DefenceOff,
+        Sprint
     }
 }
