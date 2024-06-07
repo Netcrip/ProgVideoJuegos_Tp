@@ -11,7 +11,7 @@ public class PlayerRb : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float health;
     [SerializeField] private float maxHealth;
-    private float velocity;
+    [SerializeField] private float velocity;
 
     [SerializeField] private Rigidbody _rigidbody;
     [SerializeField] private Animator AControler;
@@ -72,6 +72,8 @@ public class PlayerRb : MonoBehaviour
     [SerializeField]private float TimerCanMove=0;
 
     private float targeAngle;
+
+    [SerializeField]private bool onPlataform;
 
 
     // Damage
@@ -266,7 +268,7 @@ public class PlayerRb : MonoBehaviour
             AControler.SetBool("isJumpFull", false);
         }
 
-      
+        MoveonPlataform();
 
 
     }
@@ -274,13 +276,22 @@ public class PlayerRb : MonoBehaviour
     //Movimiento
     private void PhysicsMovement()
     {
-        if (JustMove)
+        if (JustMove && !onPlataform)
         {
             _rigidbody.MovePosition(transform.position + movDir * velocity * Time.fixedDeltaTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
             JustMove = false;
            
 
+        }
+    }
+    private void MoveonPlataform()
+    {
+        if (JustMove && onPlataform)
+        {
+            transform.position += movDir * (speed * Time.deltaTime);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+            JustMove = false;
         }
     }
 
@@ -290,17 +301,27 @@ public class PlayerRb : MonoBehaviour
         if (justJumped && doubleJump)
         {
 
-            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir * 1.5f, ForceMode.Impulse);
+            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir * velocity, ForceMode.Impulse);
             justJumped = false;
             doubleJump = false;
         }
         else if (justJumped)
         {
-            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir * 1.3f, ForceMode.Impulse);           
+            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir *velocity/2, ForceMode.Impulse);           
             justJumped = false;
         }
 
-    } 
+    }
+    // plataforma
+ 
+    public void OnLanding()
+    {
+        onPlataform = true;
+    }
+    public void OnLeave()
+    {
+        onPlataform= false;
+    }
 
     // chekeo piso
     private void chekGround()

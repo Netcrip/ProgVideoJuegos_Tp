@@ -6,20 +6,27 @@ using UnityEngine.UIElements;
 public class PlataformMove : MonoBehaviour
 {
     [SerializeField] private Transform initial;
-    [SerializeField] private Transform finish;
+    [SerializeField] private Transform final;
     [SerializeField] private float speed;
-    private Vector3 direccion;
-    private Status status;
+    [SerializeField] private Vector3 targetDirection;
+    [SerializeField] private Vector3 initialPosition;
+    [SerializeField] private Vector3 finalPosition;
+    [SerializeField] private Status status;
+    [SerializeField] private bool lerp;
+
+
     private enum Status
     {
-        going,
-        finish,
-        initial
+        Ongoing,
+        Final,
+        Initial
     }
     // Start is called before the first frame update
     void Start()
     {
-        
+        targetDirection= initial.position;
+        initialPosition =initial.position;
+        finalPosition=final.position;
     }
 
     // Update is called once per frame
@@ -27,34 +34,64 @@ public class PlataformMove : MonoBehaviour
     {
         switch (status)
         {
-            case Status.going:
+            case Status.Ongoing:
                 moveTo();
             break;
-            case Status.finish:
-                direccion = initial.position;
+            case Status.Final:
+                targetDirection = initialPosition;
                 moveTo();
             break;
-            case Status.initial:
-                direccion = finish.position;
+            case Status.Initial:
+                targetDirection = finalPosition;
                 moveTo();
                     
             break;
         }
-        if (transform.position == finish.position)
+        if (Vector3.Distance(transform.position,finalPosition)<0.05)
         {
-            status = Status.finish;
+            status = Status.Final;
         }
-        else if (transform.position == initial.position)
+        else if (Vector3.Distance(transform.position,initialPosition)<0.05)
         {
-            status = Status.initial;
+            status = Status.Initial;
         }
-        else status = Status.going;
+        else status = Status.Ongoing;
 
     }
+
     private void moveTo()
     {
-        transform.position += direccion * (Time.deltaTime*speed);
-        status = Status.going;
+        if (lerp) transform.position = Vector3.Lerp(transform.position, targetDirection, (speed /5) * Time.deltaTime);
+        else transform.position = Vector3.MoveTowards(transform.position,targetDirection,speed*Time.deltaTime);
+        status = Status.Ongoing;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(transform.position,initialPosition);
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, finalPosition);
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        PlayerRb player = other.GetComponent<PlayerRb>();
+        if (player!=null)
+        {
+            player.transform.parent = transform;
+            player.OnLanding();
+           
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        PlayerRb player = other.GetComponent<PlayerRb>();
+        if (player != null)
+        {
+            player.transform.parent = null;
+            player.OnLeave();
+            
+        }
     }
 
 }

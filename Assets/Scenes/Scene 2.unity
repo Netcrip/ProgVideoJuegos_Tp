@@ -1074,7 +1074,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 573156932}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: FinishPosition
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1604,6 +1604,7 @@ MonoBehaviour:
   speed: 3.04
   health: 100
   maxHealth: 100
+  velocity: 0
   _rigidbody: {fileID: 1284626558}
   AControler: {fileID: 1284626551}
   rotationSpeed: 0
@@ -1627,6 +1628,7 @@ MonoBehaviour:
   canMove: 0
   State: 0
   TimerCanMove: 0
+  onPlataform: 0
 --- !u!65 &1284626560
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1748,6 +1750,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 40ffe215f19b65841bb29c5e50073b72, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 40ffe215f19b65841bb29c5e50073b72, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 40ffe215f19b65841bb29c5e50073b72, type: 3}
       propertyPath: m_LocalPosition.x
       value: -20.688372
       objectReference: {fileID: 0}
@@ -1790,6 +1800,14 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 40ffe215f19b65841bb29c5e50073b72, type: 3}
       propertyPath: m_Name
       value: Cube_Grass_Single
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 40ffe215f19b65841bb29c5e50073b72, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: 40ffe215f19b65841bb29c5e50073b72, type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 40ffe215f19b65841bb29c5e50073b72, type: 3}
@@ -1897,7 +1915,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1669254484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2197,8 +2215,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initial: {fileID: 1901232919}
-  finish: {fileID: 573156932}
-  speed: 0
+  final: {fileID: 573156932}
+  speed: 3
+  targetDirection: {x: 0, y: 0, z: 0}
+  initialPosition: {x: 0, y: 0, z: 0}
+  finalPosition: {x: 0, y: 0, z: 0}
+  status: 0
+  lerp: 0
+--- !u!65 &1859202397
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1859202394}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.7641563, y: 1.8502045, z: 1.883034}
+  m_Center: {x: 0.03146553, y: 0.09832573, z: 0.016978169}
+--- !u!65 &1859202399
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1859202394}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.7641563, y: 0.7294116, z: 1.883034}
+  m_Center: {x: 0.03146553, y: 1.2898076, z: 0.016978169}
 --- !u!1 &1901232918
 GameObject:
   m_ObjectHideFlags: 0
@@ -2208,7 +2257,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1901232919}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: InitialPosition
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2223,7 +2272,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1901232918}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -6.79, y: -1.65, z: 0.09}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2600,6 +2649,10 @@ PrefabInstance:
     - target: {fileID: 1077356408, guid: c6cfc32748fb5004aa11a1be074b5c58, type: 3}
       propertyPath: m_Name
       value: Polyart_Golem
+      objectReference: {fileID: 0}
+    - target: {fileID: 1077356408, guid: c6cfc32748fb5004aa11a1be074b5c58, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1077356409, guid: c6cfc32748fb5004aa11a1be074b5c58, type: 3}
       propertyPath: m_Enabled
