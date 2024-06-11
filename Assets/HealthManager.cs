@@ -23,14 +23,13 @@ public class HealthManager : MonoBehaviour
     {
        transform.rotation = Quaternion.LookRotation(transform.position - cam.transform.position);
     }
-
     public void UpdateHealtBar(float maxHealth, float currentHealth)
     {
-        healt= currentHealth / maxHealth;
+        healt = currentHealth / maxHealth;
         healthBar.fillAmount = healt;
         if (healt > 0.75)
         {
-            healthBar.color= new Color32(40,255,0,255);
+            healthBar.color = new Color32(40, 255, 0, 255);
         }
         else if (healt > 0.25)
         {
@@ -39,4 +38,5 @@ public class HealthManager : MonoBehaviour
         else
             healthBar.color = new Color32(255, 0, 0, 255);
     }
+
 }

@@ -22,10 +22,6 @@ public class Boss : MonoBehaviour
     // Animator
     [SerializeField] private Animator AControler;
 
-    //Patroling
-    [SerializeField] private Vector3 walkPoint;
-    bool walkPointSet;
-    public float walkPointRange;
 
     //Respawn point
     [SerializeField] private Vector3 respawPoint;
@@ -60,7 +56,7 @@ public class Boss : MonoBehaviour
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange-1f, whatIsPlayer);
         if(transform.position.x == respawPoint.x && transform.position.z==respawPoint.z) inRespawnPosition= true;
         if( currentHealth > 0.0f) isAlive=true; else isAlive=false;
-        //if (!playerInSightRange && !playerInAttackRange) Patroling();
+
         if (!playerInSightRange && !playerInAttackRange && !playerInAttackLongRange && inRespawnPosition && isAlive) iddle();
         else if (!playerInSightRange && !playerInAttackRange && !playerInAttackLongRange && isAlive) goToRespawn();
         if (playerInAttackLongRange && !playerInSightRange && isAlive) LongAttackPlayer();
@@ -83,30 +79,8 @@ public class Boss : MonoBehaviour
         agent.SetDestination(respawPoint);
         AControler.SetFloat("isMoving", 0.5f);
     }
-    private void Patroling()
-    {
-        if (!walkPointSet) SearchWalkPoint();
 
-        if (walkPointSet)
-            agent.SetDestination(walkPoint);
 
-        Vector3 distanceToWalkPoint = transform.position - walkPoint;
-
-        //Walkpoint reached
-        if (distanceToWalkPoint.magnitude < 1f)
-            walkPointSet = false;
-    }
-    private void SearchWalkPoint()
-    {
-        //calcular un punto en x e y dentro de la zona del mapa
-        float randomZ = Random.Range(-walkPointRange, walkPointRange);
-        float randomX = Random.Range(-walkPointRange, walkPointRange);
-
-        walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
-
-        if (Physics.Raycast(walkPoint, -transform.up, 2f, whatIsGround))
-            walkPointSet = true;
-    }
 
     private void ChasePlayer()
     {
@@ -116,7 +90,7 @@ public class Boss : MonoBehaviour
 
     private void LongAttackPlayer()
     {
-        //Make sure enemy doesn't move
+        //fijar enemigo
         agent.SetDestination(transform.position);
         AControler.SetFloat("isMoving", 0f);
         transform.LookAt(player);
@@ -162,7 +136,7 @@ public class Boss : MonoBehaviour
 
     private void AttackPlayer()
     {
-        //Make sure enemy doesn't move
+        //fijar enemigo 
         agent.SetDestination(transform.position);
         AControler.SetFloat("isMoving", 0f);
      

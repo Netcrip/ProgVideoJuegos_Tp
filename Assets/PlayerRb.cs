@@ -2,11 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using System;
 using static PlayerState;
 
 public class PlayerRb : MonoBehaviour
 {
-
+   
 
     [SerializeField] private float speed;
     [SerializeField] private float health;
@@ -61,6 +62,11 @@ public class PlayerRb : MonoBehaviour
     private float timeshield=0f;
     private float shieldRegenerationRate = 1f;
 
+    //stamina
+    [SerializeField] private float stamina = 100, maxStamina =100, staminaRegeneration=2f, staminaConsumption=10;
+    private float timeStamina = 0f, timeStaminaConsumption=0f;
+    private float staminaConsumptionTime = 0.5f;
+    [SerializeField] float specialAttackStamina = 25;
 
     // ESTADOS PARA MOVIMIENTOS
     [SerializeField]private bool canMove;
@@ -73,17 +79,47 @@ public class PlayerRb : MonoBehaviour
 
     private float targeAngle;
 
+    //
+    private bool onPlataform;
 
     // Damage
     private float timeDamage = 0;
 
+    //evento de muerte
+    public Action onDeath;
+
     // Start is called before the first frame update
+    
+    public void Awake()
+    {
+        /*
+         HUDManager.Instance.maxStamina = maxStamina;      
+         HUDManager.Instance.maxShield = maxShield;        
+         HUDManager.Instance.maxHealth = maxHealth;
+
+         HUDManager.Instance.currentShield = shield;
+         HUDManager.Instance.currentStamina = stamina;
+         HUDManager.Instance.currentHealth = health;
+        */
+
+
+        PlayerManager.Instance.PlayerCreated(this);
+
+        PlayerManager.Instance.maxStamina = maxStamina;
+        PlayerManager.Instance.maxShield = maxShield;
+        PlayerManager.Instance.maxHealth = maxHealth;
+
+        PlayerManager.Instance.currentShield = shield;
+        PlayerManager.Instance.currentStamina = stamina;
+        PlayerManager.Instance.currentHealth = health;
+    }
     void Start()
     {
         
        
 
     }
+
 
     // Update is called once per frame
     void Update()
@@ -100,7 +136,7 @@ public class PlayerRb : MonoBehaviour
                 movDir = Quaternion.Euler(0f, targeAngle, 0f) * Vector3.forward;
                 velocity = speed;
                 JustMove = true;
-                AControler.SetFloat("isMoving", 0.5f);
+                AControler.SetFloat("isMoving", 0.5f);// de 0 a 1
                 break;
             case playerState.Sprint:
                 targeAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
@@ -161,13 +197,14 @@ public class PlayerRb : MonoBehaviour
             case playerState.Victory: 
                 break;
 
-
         }
 
         chekGround();
         Movement();
         CanMove();
-        
+        movementWhitoutPhysics();
+
+
 
     }
 
@@ -195,7 +232,7 @@ public class PlayerRb : MonoBehaviour
     {
         direction = new Vector3(Input.GetAxis("Horizontal"), 0f, +Input.GetAxis("Vertical"));
         //
-        if (health <= 0)
+        if (PlayerManager.Instance.currentHealth <= 0)
         {
             State=playerState.Dead;
         }
@@ -207,16 +244,17 @@ public class PlayerRb : MonoBehaviour
         {
             State = playerState.FullJumping;
         }
-        else if (Input.GetMouseButton(1) && isGrounded && shield > 0)
+        else if (Input.GetMouseButton(1) && isGrounded && PlayerManager.Instance.currentShield > 0)
         {
             State = playerState.DefenceOn;
         }
-        else if (Input.GetMouseButtonUp(1) && isGrounded)
+        else if (Input.GetMouseButtonUp(1) && isGrounded || PlayerManager.Instance.currentShield<=0)
         {
             State = playerState.DefenceOff;
         }
-        else if (Input.GetKeyDown(KeyCode.F) && isGrounded)
+        else if (Input.GetKeyDown(KeyCode.F) && isGrounded && PlayerManager.Instance.currentStamina-specialAttackStamina>0)
         {
+            PlayerManager.Instance.currentStamina -= specialAttackStamina;
             State = playerState.SpinAttack;
             timeDamage = 0.8f;
         }
@@ -240,8 +278,9 @@ public class PlayerRb : MonoBehaviour
                 timeDamage = 1.2f;
             }
         }
-        else if (direction.magnitude >= 0.1f && canMove && Input.GetKey(KeyCode.LeftShift))
+        else if (direction.magnitude >= 0.1f && canMove && Input.GetKey(KeyCode.LeftShift) && PlayerManager.Instance.currentStamina>0)
         {
+            StaminaConsumption();
             State = playerState.Sprint;
         }
         else if (direction.magnitude >= 0.1f && canMove)
@@ -258,29 +297,35 @@ public class PlayerRb : MonoBehaviour
         // regeneracion escudo
 
         shieldReg();
+
+        StaminaRegeneration();
         // piso
        if (isGrounded)
         {
             AControler.SetBool("isGround", true);
             AControler.SetBool("isJumping", false);
             AControler.SetBool("isJumpFull", false);
-        }
-
-      
-
-
+        }    
     }
 
     //Movimiento
     private void PhysicsMovement()
     {
-        if (JustMove)
+        if (JustMove && !onPlataform)
         {
             _rigidbody.MovePosition(transform.position + movDir * velocity * Time.fixedDeltaTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
             JustMove = false;
-           
-
+        }
+    }
+    private void movementWhitoutPhysics()
+    {
+        if (JustMove && onPlataform)
+        {
+            //_rigidbody.MovePosition(transform.position + movDir * velocity * Time.fixedDeltaTime);
+            transform.position += movDir * (speed * Time.deltaTime);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+            JustMove = false;
         }
     }
 
@@ -314,28 +359,66 @@ public class PlayerRb : MonoBehaviour
 
     //Regeneracion de escudo
     private void shieldReg()
-    {
-        if (shield  < maxShield && State !=playerState.DefenceOn)
+    {       
+        if (PlayerManager.Instance.currentShield < PlayerManager.Instance.maxShield && State != playerState.DefenceOn)
         {
             timeshield += Time.deltaTime;
-            if (timeshield>=shieldRegenerationRate)
+            if (timeshield >= shieldRegenerationRate)
             {
-                shield += shieldRegeneration;
+                PlayerManager.Instance.currentShield += shieldRegeneration;
                 timeshield = 0f;
             }
-            
-            
+
+
         }
-        else if(shield > maxShield)
+        else if (PlayerManager.Instance.currentShield > PlayerManager.Instance.maxShield)
         {
-            shield = maxShield;
+            PlayerManager.Instance.currentShield = PlayerManager.Instance.maxShield;
         }
     }
     
-    // Regeneracion Energia
 
 
-    
+    // Regeneracion Stamina
+    private void StaminaRegeneration()
+    {
+        if (PlayerManager.Instance.currentStamina < PlayerManager.Instance.maxStamina && State != playerState.Sprint)
+        {
+            timeStamina += Time.deltaTime;
+            if (timeStamina >= staminaRegeneration)
+            {
+                PlayerManager.Instance.currentStamina += PlayerManager.Instance.maxStamina/10;
+                timeStamina = 0f;
+            }
+
+
+        }
+        else if (PlayerManager.Instance.currentStamina > PlayerManager.Instance.maxStamina)
+        {
+            PlayerManager.Instance.currentStamina = PlayerManager.Instance.maxStamina;
+        }
+    }
+    private void StaminaConsumption()
+    {
+        timeStaminaConsumption += Time.deltaTime;
+        if (timeStaminaConsumption >= staminaConsumptionTime)
+        {
+            PlayerManager.Instance.currentStamina -= staminaConsumption;
+            timeStaminaConsumption = 0f;
+        }
+    }
+
+    //
+    public void onLanding()
+    {
+        onPlataform = true;
+    }
+    public void levePlataform()
+    {
+        onPlataform = false;
+    }
+
+
     // daño 
     private void ActDesactivateCollaider()
     {
@@ -350,12 +433,12 @@ public class PlayerRb : MonoBehaviour
             Enemy enemy = other.GetComponent<Enemy>();
             if (enemy != null && timeDamage>0)
             {
-                enemy.damage(damageAttack);
+            enemy.damage(damageAttack);
             }
             Boss boss = other.GetComponent<Boss>();
             if (boss != null && timeDamage > 0)
             {
-            Debug.Log("AtakeBoss");
+            
             boss.damage(damageAttack);
             }
 
@@ -363,27 +446,36 @@ public class PlayerRb : MonoBehaviour
     public void Damage(float damage)
     {
         if (State == playerState.DefenceOn)
-        {
-            if ((shield>=damage))
+        {            
+            if ((PlayerManager.Instance.currentShield >= damage))
             {
-                shield -= damage;
+                PlayerManager.Instance.currentShield -= damage;
                 AControler.SetTrigger("isDefenceHit");
             }
             else
             {
-                damage -= shield;
-                shield=0f;
-                health -= damage;
+                damage -= PlayerManager.Instance.currentShield;
+                PlayerManager.Instance.currentShield = 0f;
+                PlayerManager.Instance.currentHealth -= damage;
                 AControler.SetTrigger("isHit");
+
             }
-            
+
+
         }
         else
         {
-            health -= damage;
+            PlayerManager.Instance.currentHealth -= damage;
             AControler.SetTrigger("isHit");
         }
+        if (PlayerManager.Instance.currentHealth <= 0)
+        {
+            AControler.SetBool("isDead", true);
+            onDeath?.Invoke();
+        }
     }
+
+
      
 }
 
