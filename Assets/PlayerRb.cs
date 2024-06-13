@@ -12,7 +12,7 @@ public class PlayerRb : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float health;
     [SerializeField] private float maxHealth;
-    private float velocity;
+    [SerializeField] private float velocity;
 
     [SerializeField] private Rigidbody _rigidbody;
     [SerializeField] private Animator AControler;
@@ -79,8 +79,6 @@ public class PlayerRb : MonoBehaviour
 
     private float targeAngle;
 
-    //
-    private bool onPlataform;
 
     // Damage
     private float timeDamage = 0;
@@ -335,17 +333,27 @@ public class PlayerRb : MonoBehaviour
         if (justJumped && doubleJump)
         {
 
-            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir * 1.5f, ForceMode.Impulse);
+            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir * velocity, ForceMode.Impulse);
             justJumped = false;
             doubleJump = false;
         }
         else if (justJumped)
         {
-            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir * 1.3f, ForceMode.Impulse);           
+            _rigidbody.AddForce(Vector3.up * Mathf.Sqrt(-2f * Physics.gravity.y * jumpForce) + movDir *velocity/2, ForceMode.Impulse);           
             justJumped = false;
         }
 
-    } 
+    }
+    // plataforma
+ 
+    public void OnLanding()
+    {
+        onPlataform = true;
+    }
+    public void OnLeave()
+    {
+        onPlataform= false;
+    }
 
     // chekeo piso
     private void chekGround()

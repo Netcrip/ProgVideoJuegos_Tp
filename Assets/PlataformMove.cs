@@ -14,9 +14,9 @@ public class PlataformMove : MonoBehaviour
     [SerializeField] private bool lerp;
     private enum Status
     {
-        going,
-        finish,
-        initial
+        Ongoing,
+        Final,
+        Initial
     }
     // Start is called before the first frame update
     void Start()
@@ -32,7 +32,7 @@ public class PlataformMove : MonoBehaviour
     {
         switch (status)
         {
-            case Status.going:
+            case Status.Ongoing:
                 moveTo();
             break;
             case Status.finish:
@@ -48,15 +48,16 @@ public class PlataformMove : MonoBehaviour
 
         if (Vector3.Distance(transform.position, finalPosition)<=0.1f)
         {
-            status = Status.finish;
+            status = Status.Final;
         }
         else if (Vector3.Distance(transform.position,initialPosition)<=0.1f)
         {
-            status = Status.initial;
+            status = Status.Initial;
         }
-        else status = Status.going;
+        else status = Status.Ongoing;
 
     }
+
     private void moveTo()
     {
         if (lerp)
