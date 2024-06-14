@@ -1073,11 +1073,11 @@ AnimatorStateMachine:
   m_AnyStateTransitions: []
   m_EntryTransitions: []
   m_StateMachineTransitions:
-  - first: {fileID: -3108866193393248592}
-    second: []
   - first: {fileID: 2792845664456563200}
     second:
     - {fileID: -7186868520266177554}
+  - first: {fileID: -3108866193393248592}
+    second: []
   - first: {fileID: -4981862418355649603}
     second:
     - {fileID: -2146806187253368183}

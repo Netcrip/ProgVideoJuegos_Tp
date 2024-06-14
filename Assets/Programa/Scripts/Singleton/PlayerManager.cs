@@ -10,15 +10,18 @@ public class PlayerManager : MonoBehaviour
     private static PlayerManager instance;
 
 
-    public float maxHealth { get; set; }
+   /* public float maxHealth { get; set; }
     public float currentHealth { get; set; }
     public float maxShield { get; set; }
     public float currentShield { get; set; }
     public float maxStamina { get; set; }
     public float currentStamina { get; set; }
-    public bool havePlayer { get; set; }
+    public bool havePlayer { get; set; }*/
+
     public PlayerRb PlayerInstance => playerInstance;   
     private PlayerRb playerInstance;
+    public PlayertUiManager UIInstance => uiInstance;
+    private PlayertUiManager uiInstance;
 
     public void Awake()
     {
@@ -26,7 +29,7 @@ public class PlayerManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(this);
-            havePlayer = false;
+           // havePlayer = false;
         }
         else
         {
@@ -48,10 +51,31 @@ public class PlayerManager : MonoBehaviour
     {
         playerInstance = player;
         player.onDeath += doOnPlayerDeath;
-        havePlayer = true;
+       /* player.onShieldChange += doOnShieldChange;
+        player.onStaminaChange += doOnStaminaChange;
+        player.onHealthchange += doOnHealthChange;*/
+    }
+    public void HUDCreate(PlayertUiManager ui)
+    {
+        uiInstance = ui;
     }
     private void doOnPlayerDeath()
     {
-        playerInstance.onDeath -= doOnPlayerDeath;  
+         playerInstance.onDeath -= doOnPlayerDeath;  
     }
+   /* private void doOnShieldChange(float Current, float max)
+    {
+        PlayertUiManager.Instance.UpdateShieldBar(Current, max);
+    }
+    private void doOnHealthChange(float Current, float max)
+    {
+        
+        PlayertUiManager.Instance.UpdateHealtBar(Current, max);
+    }
+    private void doOnStaminaChange(float Current, float max)
+    {
+        PlayertUiManager.Instance.UpdateStaminadBar(Current, max);
+    }*/
+
+
 }

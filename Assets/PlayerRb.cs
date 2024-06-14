@@ -56,14 +56,14 @@ public class PlayerRb : MonoBehaviour
     private int countAttack;
     private float damageAttack;
     [SerializeField] Collider weponCollider;
-    [SerializeField] private float maxShield = 100f;
-    [SerializeField]private float shield=100f;
+    [SerializeField] private float maxShield;
+    //[SerializeField] private float shield=100f;
     [SerializeField] private float shieldRegeneration=1.5f;
     private float timeshield=0f;
     private float shieldRegenerationRate = 1f;
 
     //stamina
-    [SerializeField] private float stamina = 100, maxStamina =100, staminaRegeneration=2f, staminaConsumption=10;
+    [SerializeField] private float maxStamina, staminaRegeneration=2f, staminaConsumption=10;
     private float timeStamina = 0f, timeStaminaConsumption=0f;
     private float staminaConsumptionTime = 0.5f;
     [SerializeField] float specialAttackStamina = 25;
@@ -79,15 +79,25 @@ public class PlayerRb : MonoBehaviour
 
     private float targeAngle;
 
+    private bool onPlataform;
+
+    private float currentHealth=100f;
+    private float currentShield=50f;
+    private float currentStamina=115f;
+   
+
 
     // Damage
     private float timeDamage = 0;
 
     //evento de muerte
     public Action onDeath;
+    public Action<float,float> onHealthchange;
+    public Action<float, float> onShieldChange;
+    public Action<float, float> onStaminaChange;
 
     // Start is called before the first frame update
-    
+
     public void Awake()
     {
         /*
@@ -99,23 +109,22 @@ public class PlayerRb : MonoBehaviour
          HUDManager.Instance.currentStamina = stamina;
          HUDManager.Instance.currentHealth = health;
         */
-
-
         PlayerManager.Instance.PlayerCreated(this);
+        GameMangarer.Instance.PlayerCreated(this);
+        PlayertUiManager.Instance.PlayerCreated(this);
+        maxHealth = currentHealth;
+        maxShield= currentShield;
+        maxStamina= currentStamina;
+        
 
-        PlayerManager.Instance.maxStamina = maxStamina;
-        PlayerManager.Instance.maxShield = maxShield;
-        PlayerManager.Instance.maxHealth = maxHealth;
-
-        PlayerManager.Instance.currentShield = shield;
-        PlayerManager.Instance.currentStamina = stamina;
-        PlayerManager.Instance.currentHealth = health;
     }
     void Start()
     {
-        
-       
 
+       /* onShieldChange?.Invoke(currentShield, maxShield);
+        onHealthchange?.Invoke(currentHealth, maxHealth);
+        onStaminaChange?.Invoke(currentStamina, maxStamina);
+       */
     }
 
 
@@ -202,8 +211,6 @@ public class PlayerRb : MonoBehaviour
         CanMove();
         movementWhitoutPhysics();
 
-
-
     }
 
     private void FixedUpdate()
@@ -230,7 +237,7 @@ public class PlayerRb : MonoBehaviour
     {
         direction = new Vector3(Input.GetAxis("Horizontal"), 0f, +Input.GetAxis("Vertical"));
         //
-        if (PlayerManager.Instance.currentHealth <= 0)
+        if (currentHealth <= 0)
         {
             State=playerState.Dead;
         }
@@ -242,17 +249,17 @@ public class PlayerRb : MonoBehaviour
         {
             State = playerState.FullJumping;
         }
-        else if (Input.GetMouseButton(1) && isGrounded && PlayerManager.Instance.currentShield > 0)
+        else if (Input.GetMouseButton(1) && isGrounded && currentShield > 0)
         {
             State = playerState.DefenceOn;
         }
-        else if (Input.GetMouseButtonUp(1) && isGrounded || PlayerManager.Instance.currentShield<=0)
+        else if (Input.GetMouseButtonUp(1) && isGrounded || currentShield<=0)
         {
             State = playerState.DefenceOff;
         }
-        else if (Input.GetKeyDown(KeyCode.F) && isGrounded && PlayerManager.Instance.currentStamina-specialAttackStamina>0)
+        else if (Input.GetKeyDown(KeyCode.F) && isGrounded && -specialAttackStamina>0)
         {
-            PlayerManager.Instance.currentStamina -= specialAttackStamina;
+            currentStamina -= specialAttackStamina;
             State = playerState.SpinAttack;
             timeDamage = 0.8f;
         }
@@ -276,7 +283,7 @@ public class PlayerRb : MonoBehaviour
                 timeDamage = 1.2f;
             }
         }
-        else if (direction.magnitude >= 0.1f && canMove && Input.GetKey(KeyCode.LeftShift) && PlayerManager.Instance.currentStamina>0)
+        else if (direction.magnitude >= 0.1f && canMove && Input.GetKey(KeyCode.LeftShift) && currentStamina>0)
         {
             StaminaConsumption();
             State = playerState.Sprint;
@@ -368,20 +375,22 @@ public class PlayerRb : MonoBehaviour
     //Regeneracion de escudo
     private void shieldReg()
     {       
-        if (PlayerManager.Instance.currentShield < PlayerManager.Instance.maxShield && State != playerState.DefenceOn)
+        if (currentShield < maxShield && State != playerState.DefenceOn)
         {
             timeshield += Time.deltaTime;
             if (timeshield >= shieldRegenerationRate)
             {
-                PlayerManager.Instance.currentShield += shieldRegeneration;
+                currentShield += shieldRegeneration;
                 timeshield = 0f;
+                onShieldChange?.Invoke(currentShield, maxShield);
             }
 
 
         }
-        else if (PlayerManager.Instance.currentShield > PlayerManager.Instance.maxShield)
+        else if (currentShield > maxShield)
         {
-            PlayerManager.Instance.currentShield = PlayerManager.Instance.maxShield;
+           currentShield = maxShield;
+           onShieldChange?.Invoke(currentShield, maxShield);
         }
     }
     
@@ -390,20 +399,22 @@ public class PlayerRb : MonoBehaviour
     // Regeneracion Stamina
     private void StaminaRegeneration()
     {
-        if (PlayerManager.Instance.currentStamina < PlayerManager.Instance.maxStamina && State != playerState.Sprint)
+        if (currentStamina < maxStamina && State != playerState.Sprint)
         {
             timeStamina += Time.deltaTime;
             if (timeStamina >= staminaRegeneration)
             {
-                PlayerManager.Instance.currentStamina += PlayerManager.Instance.maxStamina/10;
+               currentStamina += maxStamina/10;
                 timeStamina = 0f;
+                onStaminaChange?.Invoke(currentStamina, maxStamina);
             }
 
 
         }
-        else if (PlayerManager.Instance.currentStamina > PlayerManager.Instance.maxStamina)
+        else if (currentStamina > maxStamina)
         {
-            PlayerManager.Instance.currentStamina = PlayerManager.Instance.maxStamina;
+            currentStamina = maxStamina;
+            onStaminaChange?.Invoke(currentStamina, maxStamina);
         }
     }
     private void StaminaConsumption()
@@ -411,8 +422,9 @@ public class PlayerRb : MonoBehaviour
         timeStaminaConsumption += Time.deltaTime;
         if (timeStaminaConsumption >= staminaConsumptionTime)
         {
-            PlayerManager.Instance.currentStamina -= staminaConsumption;
+            currentStamina -= staminaConsumption;
             timeStaminaConsumption = 0f;
+            onStaminaChange?.Invoke(currentStamina, maxStamina);
         }
     }
 
@@ -455,28 +467,31 @@ public class PlayerRb : MonoBehaviour
     {
         if (State == playerState.DefenceOn)
         {            
-            if ((PlayerManager.Instance.currentShield >= damage))
+            if ((currentShield >= damage))
             {
-                PlayerManager.Instance.currentShield -= damage;
+                currentShield -= damage;
                 AControler.SetTrigger("isDefenceHit");
+                onShieldChange?.Invoke(currentShield, maxShield);
             }
             else
             {
-                damage -= PlayerManager.Instance.currentShield;
-                PlayerManager.Instance.currentShield = 0f;
-                PlayerManager.Instance.currentHealth -= damage;
+                damage -= currentShield;
+                currentShield = 0f;
+                currentHealth -= damage;
                 AControler.SetTrigger("isHit");
-
+                onShieldChange?.Invoke(currentShield, maxShield);
+                onHealthchange?.Invoke(currentHealth,maxHealth);
             }
 
 
         }
         else
         {
-            PlayerManager.Instance.currentHealth -= damage;
+            currentHealth -= damage;
             AControler.SetTrigger("isHit");
+            onHealthchange?.Invoke(currentHealth, maxHealth);
         }
-        if (PlayerManager.Instance.currentHealth <= 0)
+        if (currentHealth <= 0)
         {
             AControler.SetBool("isDead", true);
             onDeath?.Invoke();

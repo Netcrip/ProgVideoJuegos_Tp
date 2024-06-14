@@ -10,9 +10,11 @@ public class GameMangarer : MonoBehaviour
     public static GameMangarer Instance =>instance;
 
     private static GameMangarer instance;
-    private bool gameStart = false;
+    //private bool gameStart = false;
     
-    private PlayerRb player;
+
+    public PlayerRb PlayerInstance => playerInstance;
+    private PlayerRb playerInstance;
     public void Awake()
     {
         if( instance == null)
@@ -29,18 +31,18 @@ public class GameMangarer : MonoBehaviour
     }
     public void Update()
     {
-        if (!player && PlayerManager.Instance)
-        {
-            player = PlayerManager.Instance.PlayerInstance;
-            player.onDeath += doOnPlayerDeath;
-            // Debug.Log(PlayerManager.Instance.PlayerInstance);}
-        }
+        
     }
 
     public void LoadLevel(string sceneToLoad)
     {
         SceneManager.LoadScene(sceneToLoad);
-        gameStart = true;
+        //gameStart = true;
+    }
+    public void LoadLevelwhitUi(string sceneToLoad)
+    {
+        SceneManager.LoadScene(sceneToLoad);
+        SceneManager.LoadScene("HUD", LoadSceneMode.Additive);
     }
     public void LoadSceneMorido()
     {
@@ -57,10 +59,17 @@ public class GameMangarer : MonoBehaviour
 
     private void doOnPlayerDeath()
     {
-        Invoke(nameof(LoadSceneMorido), 5);
+         Invoke(nameof(LoadSceneMorido), 5);
          PlayerManager.Instance.PlayerInstance.onDeath -= doOnPlayerDeath;
     }
 
+    public void PlayerCreated(PlayerRb player)
+    {
+        playerInstance = player;
+        player.onDeath += doOnPlayerDeath;
+        
+    }
+ 
 
 
 }

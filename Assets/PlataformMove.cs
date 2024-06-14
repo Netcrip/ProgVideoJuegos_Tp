@@ -23,7 +23,7 @@ public class PlataformMove : MonoBehaviour
     {
         initialPosition = initial.position;
         finalPosition = final.position;
-        status = Status.initial;
+        status = Status.Initial;
 
     }
 
@@ -35,11 +35,11 @@ public class PlataformMove : MonoBehaviour
             case Status.Ongoing:
                 moveTo();
             break;
-            case Status.finish:
+            case Status.Final:
                 direccion = initialPosition;
                 moveTo();
             break;
-            case Status.initial:
+            case Status.Initial:
                 direccion = finalPosition;
                 moveTo();
                     
@@ -64,7 +64,7 @@ public class PlataformMove : MonoBehaviour
             transform.position = Vector3.Lerp(transform.position, direccion, Time.deltaTime);
         else
             transform.position = Vector3.MoveTowards(transform.position,direccion , Time.deltaTime*speed);
-        status = Status.going;
+        status = Status.Ongoing;
     }
 
     public void OnTriggerStay(Collider other)

@@ -163,26 +163,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 202806801}
-  - component: {fileID: 202806800}
+  - component: {fileID: 202806802}
   m_Layer: 0
-  m_Name: HUDmanager
+  m_Name: PlayerUiManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &202806800
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 202806799}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee80bfb2dc99cd04988fa928e50d69e0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &202806801
 Transform:
   m_ObjectHideFlags: 0
@@ -198,6 +186,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 16
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &202806802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 202806799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 796e1837887033545ae248f5fb6f411b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &227413756
 GameObject:
   m_ObjectHideFlags: 0
@@ -1551,6 +1551,7 @@ MonoBehaviour:
   speed: 3.04
   health: 100
   maxHealth: 100
+  velocity: 0
   _rigidbody: {fileID: 1284626558}
   AControler: {fileID: 1284626551}
   rotationSpeed: 0
@@ -1560,7 +1561,7 @@ MonoBehaviour:
   groundDistance: 0.1
   groundMask:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 832
   isGrounded: 0
   jumpForce: 1.2
   attackDamage: 12
@@ -1569,9 +1570,7 @@ MonoBehaviour:
     m_Bits: 0
   weponCollider: {fileID: 1180398800}
   maxShield: 100
-  shield: 100
   shieldRegeneration: 1.5
-  stamina: 100
   maxStamina: 100
   staminaRegeneration: 2
   staminaConsumption: 10

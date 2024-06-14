@@ -17,7 +17,7 @@ public class Main : MonoBehaviour
     public void GameStart()
     {
         
-        GameMangarer.Instance.LoadLevel("Scene 2");
+        GameMangarer.Instance.LoadLevelwhitUi("Scene 2");
     }
     public void Preference()
     {

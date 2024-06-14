@@ -17,7 +17,7 @@ public class RestartExit : MonoBehaviour
     }
     public void Restar()
     {
-        GameMangarer.Instance.LoadLevel("Scene 2");
+        GameMangarer.Instance.LoadLevelwhitUi("Scene 2");
     }
     public void QuitGamae()
     {
