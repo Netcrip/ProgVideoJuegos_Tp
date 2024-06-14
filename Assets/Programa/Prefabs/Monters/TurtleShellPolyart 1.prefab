@@ -828,6 +828,7 @@ MonoBehaviour:
   rotationSpeed: 2.5
   playerInSightRange: 0
   playerInAttackRange: 0
+  heart: {fileID: 2947083507714573061, guid: fa60586cdf3d48d4f9c9bc0fb89920f3, type: 3}
 --- !u!54 &6776659598055282391
 Rigidbody:
   m_ObjectHideFlags: 0

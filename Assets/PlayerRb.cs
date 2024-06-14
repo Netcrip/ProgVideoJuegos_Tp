@@ -84,18 +84,22 @@ public class PlayerRb : MonoBehaviour
     private float currentHealth=100f;
     private float currentShield=50f;
     private float currentStamina=115f;
-   
 
+    private float timeAnimateHit=0.03f;
+    private float timeHit=0.03f;
 
     // Damage
     private float timeDamage = 0;
 
-    //evento de muerte
+    //eventos  
     public Action onDeath;
     public Action<float,float> onHealthchange;
     public Action<float, float> onShieldChange;
     public Action<float, float> onStaminaChange;
 
+
+    
+    
     // Start is called before the first frame update
 
     public void Awake()
@@ -257,9 +261,10 @@ public class PlayerRb : MonoBehaviour
         {
             State = playerState.DefenceOff;
         }
-        else if (Input.GetKeyDown(KeyCode.F) && isGrounded && -specialAttackStamina>0)
+        else if (Input.GetKeyDown(KeyCode.F) && isGrounded && currentStamina - specialAttackStamina>0)
         {
             currentStamina -= specialAttackStamina;
+            onStaminaChange?.Invoke(currentStamina, maxStamina);
             State = playerState.SpinAttack;
             timeDamage = 0.8f;
         }
@@ -465,12 +470,14 @@ public class PlayerRb : MonoBehaviour
     }
     public void Damage(float damage)
     {
+        timeAnimateHit -= Time.deltaTime;
         if (State == playerState.DefenceOn)
         {            
             if ((currentShield >= damage))
             {
                 currentShield -= damage;
-                AControler.SetTrigger("isDefenceHit");
+                AnimateHit("isDefenceHit");
+                // AControler.SetTrigger("isDefenceHit");
                 onShieldChange?.Invoke(currentShield, maxShield);
             }
             else
@@ -478,27 +485,41 @@ public class PlayerRb : MonoBehaviour
                 damage -= currentShield;
                 currentShield = 0f;
                 currentHealth -= damage;
-                AControler.SetTrigger("isHit");
+                AnimateHit("isHit");
+                //AControler.SetTrigger("isHit");
                 onShieldChange?.Invoke(currentShield, maxShield);
                 onHealthchange?.Invoke(currentHealth,maxHealth);
             }
-
-
         }
         else
         {
             currentHealth -= damage;
-            AControler.SetTrigger("isHit");
+            AnimateHit("isHit");
+            //AControler.SetTrigger("isHit");
             onHealthchange?.Invoke(currentHealth, maxHealth);
         }
         if (currentHealth <= 0)
-        {
+        { 
             AControler.SetBool("isDead", true);
             onDeath?.Invoke();
         }
     }
 
+    public void heal(float heal)
+    {
+        currentHealth += heal;
+        onHealthchange?.Invoke(currentHealth, maxHealth);
+    }
 
+    private void AnimateHit(string hit)
+    {
+        timeHit += Time.deltaTime;
+        if (timeAnimateHit<= timeHit)
+        {
+            AControler.SetTrigger(hit);
+            timeHit = 0f;
+        }
+    }
      
 }
 

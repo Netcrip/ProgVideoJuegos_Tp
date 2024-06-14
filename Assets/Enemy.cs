@@ -21,6 +21,8 @@ public class Enemy : MonoBehaviour
     private Vector3 targetPosition;
 
 
+
+
     // Animator
     [SerializeField] private Animator AControler;
 
@@ -40,6 +42,10 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float sightRange, attackRange, rotationSpeed;
     [SerializeField] private bool playerInSightRange, playerInAttackRange;
 
+    private bool isDead=false;
+
+    //
+    [SerializeField] private GameObject heart;
     private void Awake()
     {
         player = GameObject.Find("Player").transform;
@@ -163,14 +169,24 @@ public class Enemy : MonoBehaviour
     }
 
     public void damage(float damage)
-    {
+    {   
         currentHealth -= damage;
         health.UpdateHealtBar(maxHealth, currentHealth);
         AControler.SetTrigger("getHit");
-        if (currentHealth <= 0)
+        if (currentHealth <= 0 && !isDead)
         {
             AControler.SetBool("isDead", true);
-            Invoke(nameof(DestroyEnemy), 6f);
+
+            Vector3 itemPosition=transform.position;
+            itemPosition.y += 1;
+            itemPosition.x += Random.Range(0,3);
+            itemPosition.z += Random.Range(0, 3);
+
+            GameObject h=Instantiate(heart, itemPosition, Quaternion.Euler(-90f,0f,0f));
+
+            
+            Invoke(nameof(DestroyEnemy), 4f);
+            isDead = true;
         }
     }
 
