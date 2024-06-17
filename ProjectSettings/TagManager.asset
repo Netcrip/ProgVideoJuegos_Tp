@@ -6,6 +6,7 @@ TagManager:
   tags:
   - enemy
   - Proyectile
+  - Portal
   layers:
   - Default
   - TransparentFX
@@ -19,7 +20,7 @@ TagManager:
   - ground
   - Proyectile
   - Items
-  - 
+  - Portal
   - 
   - 
   - 
