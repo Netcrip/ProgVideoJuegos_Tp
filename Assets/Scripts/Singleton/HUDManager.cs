@@ -18,8 +18,7 @@ public class HUDManager : MonoBehaviour
             DontDestroyOnLoad(this);
         }
         else
-        {
-            ///instance = this;
+        {          
             Destroy(gameObject);
         }
 
@@ -38,5 +37,8 @@ public class HUDManager : MonoBehaviour
     {
 
     }
-
+    public void Destroy()
+    {
+        Destroy(this);
+    }
 }

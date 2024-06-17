@@ -78,21 +78,22 @@ public class GameMangarer : MonoBehaviour
     private void doOnPlayerDeath()
     {
          Invoke(nameof(LoadSceneMorido), 3);
-         PlayerManager.Instance.PlayerInstance.onDeath -= doOnPlayerDeath;
+        playerInstance.onDeath += doOnPlayerDeath;
          jefe.onDead -= doOnBossDead;
+
     }
 
     public void PlayerCreated(PlayerRb player)
     {
-         enemyCount=0;
+        enemyCount=0;
         playerInstance = player;
-        player.onDeath += doOnPlayerDeath;
+        playerInstance.onDeath += doOnPlayerDeath;
         
     }
 
     public void enemyCreate(Enemy enemy)
     {
-        enemy.onDead += doOnEnemyDeath;
+        enemy.onDead += doOnEnemyDeath;      
     }
     public void boosCreate(Boss boss)
     {

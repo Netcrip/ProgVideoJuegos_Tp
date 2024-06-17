@@ -15,15 +15,6 @@ public class PlayertUiManager : MonoBehaviour
     public PlayerRb PlayerInstance => playerInstance;
     private PlayerRb playerInstance;
 
-    /*/ Start is called before the first frame update
-    [SerializeField] private Image healthBar;
-    private float healt;
-    [SerializeField] private Image shieldthBar;
-    private float shield;
-    [SerializeField] private Image StaminaBar;
-    private float stamina;
-    // [SerializeField]private float currentHealth, currentStamina, CurrentShield;
-    */
 
     public Action<float, float> onHealthchange;
     public Action<float, float> onShieldChange;
@@ -45,7 +36,6 @@ public class PlayertUiManager : MonoBehaviour
          {
              Destroy(gameObject);
          }
-        GameMangarer.Instance.onEnemydead += enemysDead;
     }
     public void Start()
     {
@@ -79,12 +69,14 @@ public class PlayertUiManager : MonoBehaviour
         playerInstance.onStaminaChange += UpdateStaminadBar;
         playerInstance.onHealthchange += UpdateHealtBar;
         playerInstance.onVictory += doOnvictory;
+        GameMangarer.Instance.onEnemydead += enemysDead;
     }
     public void doOnPlayerDeath()
     {
         onPlayerDead?.Invoke();
         GameMangarer.Instance.unloadScene("HUD");
         playerInstance.onDeath -= doOnPlayerDeath;
+        GameMangarer.Instance.onEnemydead -= enemysDead;
     }
 
     public void enemysDead()
@@ -96,5 +88,6 @@ public class PlayertUiManager : MonoBehaviour
     {
         onPlayerWin?.Invoke();
         playerInstance.onVictory -= doOnvictory;
+        GameMangarer.Instance.onEnemydead -= enemysDead;
     }
 }
